@@ -1,3 +1,4 @@
+```mermaid
 sequenceDiagram
     participant browser
     participant server
@@ -10,3 +11,4 @@ sequenceDiagram
     
     Note right of browser: Browser proceeds to fetch main.css, main.js and data.json files from server
     Note right of browser: Same procedure as pictured in the previous sequence diagram
+```
