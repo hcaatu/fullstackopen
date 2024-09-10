@@ -4,6 +4,7 @@ const Button = (props) => (
   <button onClick={props.handleClick}>{props.text}</button>
 )
 
+// this method isn't truly random but works for now
 const randomInteger = (max) => {
   return (
     Math.floor(Math.random() * max)
@@ -42,7 +43,6 @@ const App = () => {
   
   const nextClick = () => {
     const random = randomInteger(8)
-    console.log(random)
     setSelected(random)
   }
 
@@ -55,7 +55,7 @@ const App = () => {
   // returns the index of the largest element
   const maxOfArray = (arr) => {
     if (arr.length === 0) {
-      return -1;
+      return -1
     }
 
     var max = arr[0]
@@ -63,11 +63,11 @@ const App = () => {
 
     for (var i = 1; i < arr.length; i++) {
       if (arr[i] > max) {
-        maxIndex = i;
-        max = arr[i];
+        maxIndex = i
+        max = arr[i]
       }
     }
-    return maxIndex;
+    return maxIndex
   }
 
   const mostVotedAnecdote = anecdotes[maxOfArray(points)]
