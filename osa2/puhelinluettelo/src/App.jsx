@@ -39,6 +39,12 @@ const App = () => {
       visible: true
     }
 
+    axios
+      .post('http://localhost:3001/persons', personObject)
+      .then(response => {
+        console.log(response.data)
+      })
+
     if (persons.map(person => person.name).includes(newName)) {
       return window.alert(`${newName} is already added to the phonebook`)
     }
@@ -58,11 +64,13 @@ const App = () => {
     const personsToShow = names.map(name => caseInsensitiveInclude(name, newFilter))
 
     let index = 0
+    const visiblePersons = []
     persons.forEach(person => {
-      person.visible = personsToShow[index]
+      const changedPerson = {...person, visible: personsToShow[index]}
+      visiblePersons.push(changedPerson)
       index += 1
     });
-    
+    setPersons(visiblePersons)
     setNewFilter('')
   }
 
