@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 const Person = ({ name, number, visible }) => {
   if (!visible) {
@@ -13,17 +14,20 @@ const caseInsensitiveInclude = (search, str) =>
   new RegExp(str, 'i').test(search)
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { 
-      id: '1',
-      name: 'Arto Hellas',
-      number: '040-1231244',
-      visible: true
-    }
-  ]) 
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('promise fulfilled')
+        setPersons(response.data)
+        console.log(response.data)
+      })
+    }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -48,7 +52,6 @@ const App = () => {
   }
 
   const filterShown = (event) => {
-    console.log(event.target)
     event.preventDefault()
     
     const names = persons.map(person => person.name)
@@ -111,7 +114,6 @@ const App = () => {
       </div>
     </div>
   )
-
 }
 
 export default App
