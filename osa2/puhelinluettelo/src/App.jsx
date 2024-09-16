@@ -1,12 +1,69 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+import { useEffect, useState, useRef } from 'react'
+import phonebookService from './services/persons'
 
-const Person = ({ name, number, visible }) => {
-  if (!visible) {
+const Person = ({ person, inputRef, onSubmit }) => {
+  if (!person.visible) {
     return 
   }
   return (
-    <li>{name} {number}</li>
+    <li key={person.name}>
+      {person.name} {person.number}
+      <form key={person.id} onSubmit={onSubmit}> 
+        <input type='hidden' ref={inputRef} value={person.id} />
+        <button type="submit" onClick={() => inputRef.current = person.id}>delete</button>
+      </form>
+    </li>
+  )
+}
+
+const FilterForm = ({newFilter, onSubmit, onChange }) => {
+  return (
+    <form onSubmit={onSubmit}>
+      <label htmlFor='query'>filter shown with</label>
+      <input 
+        id='query'
+        value={newFilter}
+        onChange={onChange}
+        placeholder='filter..' />
+      <br></br>
+      <button type="submit">apply filter</button>
+    </form>
+  )
+}
+
+const AddPersonForm = ({ onSubmit, newName, onNameChange, newNumber, onNumberChange }) => {
+  return (
+    <form onSubmit={onSubmit}>
+        <label htmlFor='name'>name:</label>
+        <input
+        id='name'
+        value={newName}
+        onChange={onNameChange}
+        placeholder='new name...'/>
+        <br></br>
+
+        <label htmlFor='number'>number:</label>
+        <input 
+        id='number'
+        value={newNumber}
+        onChange={onNumberChange}
+        placeholder='new number..' />
+        <br></br>
+
+        <button type="submit">add</button>
+      </form>
+  )
+}
+
+const PersonList = ({ persons, inputRef, onSubmit }) => {
+  return (
+    <ul>
+      {persons.map(person =>
+        <div>
+          <Person person={person} inputRef={inputRef} onSubmit={onSubmit} />
+        </div>
+      )}
+    </ul>
   )
 }
 
@@ -18,14 +75,15 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const inputRef = useRef(null)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
+    phonebookService
+      .getAll()
+      .then(initialPersons => {
         console.log('promise fulfilled')
-        setPersons(response.data)
-        console.log(response.data)
+        setPersons(initialPersons)
+        console.log(initialPersons)
       })
     }, [])
 
@@ -33,28 +91,46 @@ const App = () => {
     event.preventDefault()
 
     const personObject = {
-      id: String(persons.length + 1),
       name: newName,
       number: newNumber,
       visible: true
     }
 
-    axios
-      .post('http://localhost:3001/persons', personObject)
-      .then(response => {
-        console.log(response.data)
+    if (persons.map(person => person.name).includes(newName)) {
+      window.alert(`${newName} is already added to the phonebook`)
+      setNewName('')
+      setNewNumber('')
+    }
+    else if (persons.map(person => person.number).includes(newNumber)) {
+      window.alert(`${newNumber} is already added to the phonebook`)
+      setNewName('')
+      setNewNumber('')
+    }
+    else {
+      phonebookService
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
       })
 
-    if (persons.map(person => person.name).includes(newName)) {
-      return window.alert(`${newName} is already added to the phonebook`)
+      setPersons(persons.concat(personObject))
+      setNewName('')
+      setNewNumber('')
     }
-    if (persons.map(person => person.number).includes(newNumber)) {
-      return window.alert(`${newNumber} is already added to the phonebook`)
-    }
+  }
 
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+  const removePerson = (event) => {
+    console.log(`inputref current ${inputRef.current}`)
+    event.preventDefault()
+    phonebookService
+      .remove(inputRef.current)
+      .then(returnedPerson => {
+        const personIndex = persons.map(person => person.id).indexOf(returnedPerson.id)
+        
+        const newPersons = persons.slice(0)
+        newPersons.splice(personIndex, 1)
+        setPersons(newPersons)
+      })
   }
 
   const filterShown = (event) => {
@@ -81,45 +157,21 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <form onSubmit={filterShown}>
-        <label htmlFor='query'>filter shown with</label>
-        <input 
-        id='query'
-        value={newFilter}
-        onChange={handleQueryChange}
-        placeholder='filter..' />
-        <br></br>
-        <button type="submit">apply filter</button>
-      </form>
+      <FilterForm 
+        newFilter={newFilter} 
+        onSubmit={filterShown} 
+        onChange={handleQueryChange} />
 
-      <h2>add new</h2>
-      <form onSubmit={addPerson}>
-        <label htmlFor='name'>name:</label>
-        <input
-        id='name'
-        value={newName}
-        onChange={handleNameChange}
-        placeholder='new name...'/>
-        <br></br>
+      <h3>Add a new</h3>
+      <AddPersonForm 
+        onSubmit={addPerson}
+        newName={newName} 
+        onNameChange={handleNameChange} 
+        newNumber={newNumber} 
+        onNumberChange={handleNumberChange} />
 
-        <label htmlFor='number'>number:</label>
-        <input 
-        id='number'
-        value={newNumber}
-        onChange={handleNumberChange}
-        placeholder='new number..' />
-        <br></br>
-
-        <button type="submit">add</button>
-      </form>
-      <h2>Numbers</h2>
-      <div>
-        <ul>
-          {persons.map(person =>
-            <Person key={person.id} name={person.name} number={person.number} visible={person.visible} />
-          )}
-        </ul>
-      </div>
+      <h3>Numbers</h3>
+      <PersonList persons={persons} inputRef={inputRef} onSubmit={removePerson} />
     </div>
   )
 }
