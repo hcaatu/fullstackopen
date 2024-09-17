@@ -67,6 +67,30 @@ const PersonList = ({ persons, inputRef, onSubmit }) => {
   )
 }
 
+const Error = ({ error }) => {
+  if (error == null) {
+    return
+  }
+
+  return (
+    <div className='error'>
+      { error }
+    </div>
+  )
+}
+
+const Notification = ({ message }) => {
+  if (message == null) {
+    return
+  }
+  
+  return (
+    <div className='notification'>
+      { message }
+    </div>
+  )
+}
+
 const caseInsensitiveInclude = (search, str) =>
   new RegExp(str, 'i').test(search)
 
@@ -75,6 +99,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  const [error, setError] = useState(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -115,6 +141,17 @@ const App = () => {
           .then(returnedPerson => {
             console.log('returned person' + returnedPerson.number)
             setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson))
+
+            setMessage(`Updated the number of ${updatedPerson.name}`)
+            setTimeout(() => {
+              setMessage(null)
+            }, 3000)
+          })
+          .catch(error => {
+            setError(`Information of ${updatedPerson.name} has already been removed from server`)
+            setTimeout(() => {
+              setError(null)
+            }, 3000)
           })
         }
       }
@@ -136,6 +173,10 @@ const App = () => {
       })
 
       setPersons(persons.concat(personObject))
+      setMessage(`Added ${personObject.name}`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 3000)
       setNewName('')
       setNewNumber('')
     }
@@ -144,15 +185,26 @@ const App = () => {
   const removePerson = (event) => {
     console.log(`inputref current ${inputRef.current}`)
     event.preventDefault()
+    const removedPerson = persons.find(person => person.id == inputRef.current)
     phonebookService
       .remove(inputRef.current)
       .then(returnedPerson => {
         const personIndex = persons.map(person => person.id).indexOf(returnedPerson.id)
-        
         const newPersons = persons.slice(0)
         newPersons.splice(personIndex, 1)
         setPersons(newPersons)
+        setMessage(`Removed ${removedPerson.name}`)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
       })
+      .catch(error =>
+        setError(`${removedPerson.name} has already been remover from server`)
+      )
+      setTimeout(() => {
+        setError(null)
+      }, 3000)
+      
   }
 
   const filterShown = (event) => {
@@ -179,6 +231,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
+      <Error error={error} />
       <FilterForm 
         newFilter={newFilter} 
         onSubmit={filterShown} 
