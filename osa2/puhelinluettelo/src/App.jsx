@@ -60,7 +60,7 @@ const PersonList = ({ persons, inputRef, onSubmit }) => {
     <ul>
       {persons.map(person =>
         <div>
-          <Person person={person} inputRef={inputRef} onSubmit={onSubmit} />
+          <Person key={person.id} person={person} inputRef={inputRef} onSubmit={onSubmit} />
         </div>
       )}
     </ul>
@@ -97,9 +97,31 @@ const App = () => {
     }
 
     if (persons.map(person => person.name).includes(newName)) {
-      window.alert(`${newName} is already added to the phonebook`)
+      const confirm = window.confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`)
+      console.log(confirm)
+
+      if (confirm) {
+        if (persons.map(person => person.number).includes(newNumber)) {
+          window.alert(`${newNumber} is already added to the phonebook`)
+          setNewName('')
+          setNewNumber('')
+        }
+      else {
+        const personToBeUpdated = persons.find(person => person.name === newName)
+        console.log(personToBeUpdated)
+        const updatedPerson = {...personToBeUpdated, number: newNumber}
+        phonebookService
+          .updateNumber(personToBeUpdated, updatedPerson)
+          .then(returnedPerson => {
+            console.log('returned person' + returnedPerson.number)
+            setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson))
+          })
+        }
+      }
+
       setNewName('')
       setNewNumber('')
+
     }
     else if (persons.map(person => person.number).includes(newNumber)) {
       window.alert(`${newNumber} is already added to the phonebook`)
