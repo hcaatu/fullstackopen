@@ -59,8 +59,8 @@ const PersonList = ({ persons, inputRef, onSubmit }) => {
   return (
     <ul>
       {persons.map(person =>
-        <div>
-          <Person key={person.id} person={person} inputRef={inputRef} onSubmit={onSubmit} />
+        <div key={person.name}>
+          <Person person={person} inputRef={inputRef} onSubmit={onSubmit} />
         </div>
       )}
     </ul>
@@ -174,6 +174,7 @@ const App = () => {
 
       setPersons(persons.concat(personObject))
       setMessage(`Added ${personObject.name}`)
+      console.log(personObject)
       setTimeout(() => {
         setMessage(null)
       }, 3000)
@@ -247,8 +248,10 @@ const App = () => {
         onNumberChange={handleNumberChange} />
 
       <h3>Numbers</h3>
+      
       <PersonList persons={persons} inputRef={inputRef} onSubmit={removePerson} />
     </div>
+    
   )
 }
 
