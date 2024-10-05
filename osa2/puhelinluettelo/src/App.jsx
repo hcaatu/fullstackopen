@@ -39,7 +39,8 @@ const AddPersonForm = ({ onSubmit, newName, onNameChange, newNumber, onNumberCha
         id='name'
         value={newName}
         onChange={onNameChange}
-        placeholder='new name...'/>
+        placeholder='new name...'
+        required />
         <br></br>
 
         <label htmlFor='number'>number:</label>
@@ -47,7 +48,8 @@ const AddPersonForm = ({ onSubmit, newName, onNameChange, newNumber, onNumberCha
         id='number'
         value={newNumber}
         onChange={onNumberChange}
-        placeholder='new number..' />
+        placeholder='new number..'
+        required />
         <br></br>
 
         <button type="submit">add</button>
@@ -122,6 +124,15 @@ const App = () => {
       visible: true
     }
 
+    if (personObject.number === '') {
+      setError(`Must include a number`)
+      setTimeout(() => {
+        setError(null)
+      }, 3000)
+      setNewName('')
+      setNewNumber('')
+    }
+
     if (persons.map(person => person.name).includes(newName)) {
       const confirm = window.confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`)
       console.log(confirm)
@@ -139,7 +150,7 @@ const App = () => {
         phonebookService
           .updateNumber(personToBeUpdated, updatedPerson)
           .then(returnedPerson => {
-            console.log('returned person' + returnedPerson.number)
+            console.log('returned person ' + returnedPerson.number)
             setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson))
 
             setMessage(`Updated the number of ${updatedPerson.name}`)
@@ -175,6 +186,7 @@ const App = () => {
       setPersons(persons.concat(personObject))
       setMessage(`Added ${personObject.name}`)
       console.log(personObject)
+
       setTimeout(() => {
         setMessage(null)
       }, 3000)
