@@ -178,18 +178,23 @@ const App = () => {
     }
     else {
       phonebookService
-      .create(personObject)
-      .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
-      })
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setMessage(`Added ${personObject.name}`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 3000)
+        })
+        
+        .catch(error => {
+          setError(`${error.response.data.error}`)
+          setTimeout(() => {
+            setError(null)
+          }, 3000)
+        })
 
-      setPersons(persons.concat(personObject))
-      setMessage(`Added ${personObject.name}`)
       console.log(personObject)
-
-      setTimeout(() => {
-        setMessage(null)
-      }, 3000)
       setNewName('')
       setNewNumber('')
     }
